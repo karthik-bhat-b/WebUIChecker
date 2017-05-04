@@ -49,6 +49,11 @@ public class EnvironmentConfiguration {
 
         try {
             prop.load(new FileInputStream(new File("properties/config.properties")));
+            try {
+                new File(prop.getProperty("path.baseline")).toPath();
+            } catch (NullPointerException e){
+                defaultBaselinePath = true;
+            }
         } catch (IOException e) {
             defaultBaselinePath = true;
         }
