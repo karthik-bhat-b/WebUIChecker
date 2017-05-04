@@ -34,11 +34,11 @@ public class BrowserSetup {
     }
 
     private void initializeDriver() {
-        String browserName = driver.getCapabilities().getCapability("browserName").toString();
-        if (browserName.equals("chrome")) {
+        if (System.getProperty("webdriver.chrome.driver") != null) {
             driver = new ChromeDriver();
         }
-        if (browserName.equals("firefox")) {
+
+        if (System.getProperty("webdriver.gecko.driver") != null) {
             driver = new FirefoxDriver();
         }
     }
