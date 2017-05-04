@@ -1,0 +1,235 @@
+before_script:
+    - mvn compile
+
+stages:
+    - Tests
+    - Reports
+    - Pack
+    - Publish
+    
+EnvironmentConfiguration:
+    stage: Tests
+    before_script:
+        - uname -a
+        - pwd
+        - cp properties/config.model.properties properties/config.properties
+        - mkdir -p img
+        - cp -r /Users/gitlabrunner/img/ img/
+    script:
+          - mvn clean -Dtest=EnvironmentConfigurationTest test
+    artifacts:
+        when: always
+        name: "${CI_BUILD_STAGE}_${CI_BUILD_REF_NAME}"
+        expire_in: 1 week
+        paths:
+            - target/reports/
+    tags:
+        - mac
+        - selenium
+        - java
+
+ResultType:
+    stage: Tests
+    before_script:
+        - uname -a
+        - pwd
+        - cp properties/config.model.properties properties/config.properties
+        - mkdir -p img
+        - cp -r /Users/gitlabrunner/img/ img/
+    script:
+        - mvn -Dtest=ResultTypeTest test
+    artifacts:
+          when: always
+          name: "${CI_BUILD_STAGE}_${CI_BUILD_REF_NAME}"
+          expire_in: 1 week
+          paths:
+              - target/reports/
+    tags:
+        - mac
+        - selenium
+        - java
+    
+PixelComparison:
+    stage: Tests
+    before_script:
+        - uname -a
+        - pwd
+        - cp properties/config.model.properties properties/config.properties
+        - mkdir -p img
+        - cp -r /Users/gitlabrunner/img/ img/
+    script:
+        - mvn -DremoteHub=$remoteHub -Dbrowser=firefox -Dtest=PixelComparisonTest test
+    after_script:
+        - cp -r img/ /Users/gitlabrunner/img/ || true
+    artifacts:
+          when: always
+          name: "${CI_BUILD_STAGE}_${CI_BUILD_REF_NAME}"
+          expire_in: 1 week
+          paths:
+              - target/reports/
+    tags:
+        - mac
+        - selenium
+        - java
+
+FirefoxFullPageTest:
+    stage: Tests
+    before_script:
+        - uname -a
+        - pwd
+        - cp properties/config.model.properties properties/config.properties
+        - mkdir -p img
+        - cp -r /Users/gitlabrunner/img/ img/
+    script:
+        - mvn -DremoteHub=$remoteHub -Dbrowser=firefox -Dtest=FullPageComparisonTest test
+    after_script:
+            - cp -r img/ /Users/gitlabrunner/img/ || true
+    artifacts:
+          when: always
+          name: "${CI_BUILD_STAGE}_${CI_BUILD_REF_NAME}"
+          expire_in: 1 week
+          paths:
+              - target/reports/
+    tags:
+        - mac
+        - selenium
+        - java
+
+ChromeFullPageTest:
+    stage: Tests
+    before_script:
+        - uname -a
+        - pwd
+        - cp properties/config.model.properties properties/config.properties
+        - mkdir -p img
+        - cp -r /Users/gitlabrunner/img/ img/
+    script:
+        - mvn -DremoteHub=$remoteHub -Dbrowser=chrome -Dtest=FullPageComparisonTest test
+    after_script:
+            - cp -r img/ /Users/gitlabrunner/img/ || true
+    artifacts:
+          when: always
+          name: "${CI_BUILD_STAGE}_${CI_BUILD_REF_NAME}"
+          expire_in: 1 week
+          paths:
+              - target/reports/
+    tags:
+        - mac
+        - selenium
+        - java
+
+FirefoxScreenshot:
+    stage: Tests
+    before_script:
+        - uname -a
+        - pwd
+        - cp properties/config.model.properties properties/config.properties
+        - mkdir -p img
+        - cp -r /Users/gitlabrunner/img/ img/
+    script:
+        - mvn -DremoteHub=$remoteHub -Dbrowser=firefox -Dtest=ScreenshotTest test
+    after_script:
+            - cp -r img/ /Users/gitlabrunner/img/ || true
+    artifacts:
+          when: always
+          name: "${CI_BUILD_STAGE}_${CI_BUILD_REF_NAME}"
+          expire_in: 1 week
+          paths:
+              - target/reports/
+    tags:
+        - mac
+        - selenium
+        - java
+        
+ChromeScreenshot:
+    stage: Tests
+    before_script:
+        - uname -a
+        - pwd
+        - cp properties/config.model.properties properties/config.properties
+        - mkdir -p img
+        - cp -r /Users/gitlabrunner/img/ img/
+    script:
+        - mvn -DremoteHub=$remoteHub -Dbrowser=chrome -Dtest=ScreenshotTest test
+    after_script:
+            - cp -r img/ /Users/gitlabrunner/img/ || true
+    artifacts:
+          when: always
+          name: "${CI_BUILD_STAGE}_${CI_BUILD_REF_NAME}"
+          expire_in: 1 week
+          paths:
+              - target/reports/
+    tags:
+        - mac
+        - selenium
+        - java
+
+AllureReport:
+    stage: Reports
+    script:
+        - allure generate target/reports/allure-results/ -o target/reports/html-report/
+    artifacts:
+        name: "${CI_BUILD_STAGE}_${CI_BUILD_REF_NAME}"
+        expire_in: 2 week
+        when: always
+        paths:
+            - target/reports/
+            - target/html-report
+    when: always
+    tags:
+        - mac
+        - selenium
+        - java
+
+JavaDoc:
+    stage: Pack
+    only:
+        - master
+    script:
+        - mvn javadoc:javadoc
+    artifacts:
+        name: "${CI_BUILD_STAGE}_${CI_BUILD_REF_NAME}"
+        expire_in: 6 mos
+        when: always
+        paths:
+            - target/site/apidocs/
+    tags:
+        - mac
+        - selenium
+        - java
+
+AVWCLibrary:
+  stage: Pack
+  script:
+      - mvn -DskipTests package
+  artifacts:
+      name: "${CI_BUILD_STAGE}_${CI_BUILD_REF_NAME}"
+      expire_in: 2 mos
+      when: always
+      paths:
+          - target/web-ui-checker-1.0-SNAPSHOT.jar
+  tags:
+      - mac
+      - selenium
+      - java
+
+AltomSnapshotRepo:
+  stage: Publish
+  environment: staging
+  only:
+      - master
+  script:
+      - mvn deploy -DskipTests
+  tags:
+      - artifactory
+
+AltomRepo:
+  stage: Publish
+  environment: production
+  when: manual
+  only:
+      - master
+  script:
+      - mvn deploy -f pom-release.xml -DskipTests
+  tags:
+      - artifactory

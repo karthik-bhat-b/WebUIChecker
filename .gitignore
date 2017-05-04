@@ -1,0 +1,6 @@
+AVWC.iml
+.idea/*
+target
+img
+properties/config.properties
+drivers
