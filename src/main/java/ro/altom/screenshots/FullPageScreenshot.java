@@ -116,7 +116,7 @@ public class FullPageScreenshot extends Screenshot {
     }
 
     private long getScrollPositionOnY() {
-        return Long.parseLong(driver.executeScript("return window.scrollY").toString());
+        return Long.parseLong(driver.executeScript("return Math.round(window.scrollY)").toString());
     }
 
     private void scrollOnePage() throws InterruptedException {
