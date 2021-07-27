@@ -1,4 +1,5 @@
-# - WebUI Checker -
+# - WebUI Checker - 
+NOTE: This Rpository is copy of https://gitlab.com/altom/WebUIChecker
 ### An Automated Visual Web Checking tool
 
 
